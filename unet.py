@@ -6,12 +6,13 @@ import torch.nn.functional as F
 class DoubleConv(nn.Module):
     def __init__(self, in_ch, out_ch):
         super().__init__()
+        Norm = lambda c: nn.InstanceNorm2d(c, affine=True, track_running_stats=False)
         self.net = nn.Sequential(
-            nn.Conv2d(in_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
+            nn.Conv2d(in_ch, out_ch, 3, padding=1, bias=False),
+            Norm(out_ch),
             nn.ReLU(inplace=True),
-            nn.Conv2d(out_ch, out_ch, 3, padding=1),
-            nn.BatchNorm2d(out_ch),
+            nn.Conv2d(out_ch, out_ch, 3, padding=1, bias=False),
+            Norm(out_ch),
             nn.ReLU(inplace=True),
         )
     def forward(self, x): return self.net(x)
@@ -41,16 +42,16 @@ class Up(nn.Module):
         return self.conv(x)
 
 class UNet(nn.Module):
-    def __init__(self, in_channels=3, base=64, out_channels=3):
+    def __init__(self, in_channels=3, base=32, out_channels=3):
         super().__init__()
         self.inc = DoubleConv(in_channels, base)
         self.d1 = Down(base, base*2)
         self.d2 = Down(base*2, base*4)
         self.d3 = Down(base*4, base*8)
-        self.d4 = Down(base*8, base*8)
-        self.u1 = Up(base*16, base*4)
-        self.u2 = Up(base*8, base*2)
-        self.u3 = Up(base*4, base)
+        self.d4 = Down(base*8, base*16)
+        self.u1 = Up(base*16, base*8)
+        self.u2 = Up(base*8, base*4)
+        self.u3 = Up(base*4, base*2)
         self.u4 = Up(base*2, base)
         self.outc = nn.Conv2d(base, out_channels, 1)
 
