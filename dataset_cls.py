@@ -15,7 +15,7 @@ class PairDataset(Dataset):
             transforms.ToTensor(),
         ])
 
-        # normal.csv 在 orig_dir
+        # no_defects.csv 在 orig_dir
         normal_file = os.path.join(orig_dir, "no_defects.csv")
         normals = set()
         if os.path.exists(normal_file):
@@ -41,5 +41,5 @@ class PairDataset(Dataset):
         orig_path, recon_path, label = self.samples[idx]
         orig = self.transform(Image.open(orig_path).convert("RGB"))
         recon = self.transform(Image.open(recon_path).convert("RGB"))
-        x = torch.cat([orig, recon], dim=0)  # 6通道
-        return x, label
+        diff = torch.abs(orig - recon)      # [3,H,W]，值域仍在 [0,1]
+        return diff, label

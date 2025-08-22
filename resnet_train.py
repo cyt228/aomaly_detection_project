@@ -5,8 +5,8 @@ from torchvision import models
 from dataset_cls import PairDataset
 
 def build_model(num_classes=2):
-    net = models.resnet18(weights=None)
-    net.conv1 = nn.Conv2d(6, 64, kernel_size=7, stride=2, padding=3, bias=False)
+    net = models.resnet18(weights="IMAGENET1K_V1") 
+    net.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3, bias=False)
     net.fc = nn.Linear(net.fc.in_features, num_classes)
     return net
 
